@@ -1,0 +1,30 @@
+
+FROM node:20
+
+WORKDIR /app
+
+COPY package*.json pnpm-lock.yaml ./
+
+RUN npm install
+
+COPY package.json pnpm-lock.yaml ./
+
+COPY prisma ./prism
+
+RUN npm run build
+
+FROM node:20 AS production
+
+WORKDIR /app
+
+COPY --from=build /app/package*.json /app/pnpm-lock.yaml ./
+
+RUN npm install --only=production
+
+COPY --from=build /app/dist ./dist
+
+ENV NODE_ENV production
+
+EXPOSE 8080
+
+CMD ["npm", "start"]

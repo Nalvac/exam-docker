@@ -1,0 +1,41 @@
+version: '3'
+services:
+  mariadb:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PASSWORD}
+      MYSQL_DATABASE: ${DATABASE}
+
+    # SEVIECE POUR TESTER SI ON SE CONNECETE BIEN À MARIA DB
+
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" "-u",
+              "root",
+              "--password=${PASSWORD}",]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - .:app/
+      - /app/node_modules
+      - /app/.pnpm-store
+
+    environment:
+      PORT: 8000
+      DATABASE_URL: mariadb://root:${PASSWORD}@mariadb:3306/${DATABASE}
+      JWT_SECRET: ${JWT-SECRET}
+
+
+
+    ports:
+      - "3000:8000"
+
+
+
+
+
